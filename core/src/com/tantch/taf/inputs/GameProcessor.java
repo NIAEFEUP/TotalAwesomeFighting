@@ -27,8 +27,8 @@ public class GameProcessor implements InputProcessor {
 		case Keys.DOWN:
 			screen.getFighter().start("down");
 			return true;
-		case Keys.V:
-			screen.getFighter().start("espada");
+		case Keys.SPACE:
+			screen.getFighter().start("jump");
 			return true;
 		default:
 			return false;
@@ -51,9 +51,6 @@ public class GameProcessor implements InputProcessor {
 			return true;
 		case Keys.DOWN:
 			screen.getFighter().stop("down");
-			return true;
-		case Keys.V:
-			screen.getFighter().stop("espada");
 			return true;
 
 		default:

@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.tantch.taf.TAFGame;
 
 public class Fighter {
+
+	private int JUMPPOWER = 77;
+	private int GRAVITY = -8;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -28,10 +31,15 @@ public class Fighter {
 	private int framesNumber;
 	private float time;
 
+	private int vely = 0;
+	private int velx = 0;
+	private int frameSkip = 0;
 	private int curFrame;
 	private int dir;
+	private int x, y;
 	private String action;
 	private String standByAction;
+	private boolean onGoingAction = false;
 
 	public Fighter(TAFGame game) {
 		bodySpriteName = "BODY_male.png";
@@ -50,7 +58,8 @@ public class Fighter {
 		action = "idle";
 		standByAction = "idle";
 		setTextures();
-
+		x = 200;
+		y = 200;
 	}
 
 	private void setTextures() {
@@ -60,29 +69,31 @@ public class Fighter {
 			folder = "walkcycle/";
 			dir = 1;
 			framesNumber = 9;
+			frameSkip = 0;
+			velx = -10;
 			break;
 		case "right":
 			folder = "walkcycle/";
 			dir = 3;
 			framesNumber = 9;
+			frameSkip = 0;
+			velx = 10;
 			break;
-		case "up":
-			folder = "walkcycle/";
-			dir = 0;
-			framesNumber = 9;
-			break;
-		case "down":
-			folder = "walkcycle/";
-			dir = 2;
-			framesNumber = 9;
+		case "jump":
+			folder = "bow/";
+			framesNumber = 1;
+			frameSkip = 2;
+			onGoingAction = true;
+			vely = JUMPPOWER;
 			break;
 		case "idle":
 		default:
 			folder = "walkcycle/";
+			frameSkip = 0;
 			framesNumber = 1;
+			velx = 0;
 			break;
 		}
-		System.out.println("LOG : dir : " + dir);
 
 		bodySprite = new Texture(Gdx.files.internal(folder + bodySpriteName));
 		beltSprite = new Texture(Gdx.files.internal(folder + beltSpriteName));
@@ -94,6 +105,15 @@ public class Fighter {
 	}
 
 	public void start(String act) {
+
+		if (act.equals("jump")) {
+			standByAction = action;
+			action = act;
+			curFrame = 0;
+			setTextures();
+			return;
+		}
+
 		if (!action.equals("idle")) {
 			standByAction = act;
 			return;
@@ -117,10 +137,20 @@ public class Fighter {
 		}
 	}
 
-	public void draw(int x, int y, float delta) {
+	public void draw(float delta) {
 		time += delta;
 
-		if (time > 1.0f / 15.0f) {
+		if (time > 1.0f / 20.0f) {
+			x += velx;
+			vely += GRAVITY;
+
+			y += vely;
+			// TODO HARDCODED OBSTACLE FLOOR
+			if (y <= 200) {
+				y = 200;
+				vely = 0;
+				stop("jump");
+			}
 			curFrame++;
 			if (curFrame >= framesNumber) {
 				curFrame = 0;
@@ -129,8 +159,9 @@ public class Fighter {
 
 		}
 
-		int framx = curFrame * width;
+		int framx = (curFrame + frameSkip) * width;
 		int framy = dir * height;
+		game.batch.setColor(1f, 1f, 1f, 1f);
 		game.batch.draw(bodySprite, x, y, width * 2, height * 2, framx, framy, width, height, false, false);
 		game.batch.draw(beltSprite, x, y, width * 2, height * 2, framx, framy, width, height, false, false);
 		game.batch.draw(feetSprite, x, y, width * 2, height * 2, framx, framy, width, height, false, false);

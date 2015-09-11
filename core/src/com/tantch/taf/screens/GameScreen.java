@@ -56,7 +56,7 @@ public class GameScreen implements Screen {
 			//
 			// }
 
-			fighter.draw(200, 200, delta);
+			fighter.draw(delta);
 		}
 		game.batch.end();
 	}
