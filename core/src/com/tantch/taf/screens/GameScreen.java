@@ -5,6 +5,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.tantch.taf.TAFGame;
 import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.inputs.GameProcessor;
@@ -12,6 +14,8 @@ import com.tantch.taf.inputs.GameProcessor;
 public class GameScreen implements Screen {
 	final TAFGame game;
 	private TiledMap map;
+	private OrthogonalTiledMapRenderer renderer;
+	
 	Fighter fighter;
 	OrthographicCamera camera;
 
@@ -26,7 +30,10 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
+		map = new TmxMapLoader().load("maps/map.tmx");
+		renderer = new OrthogonalTiledMapRenderer(map);
+
+		camera = new OrthographicCamera();
 
 	}
 
@@ -37,6 +44,9 @@ public class GameScreen implements Screen {
 
 		camera.update();
 
+		renderer.setView(camera);
+		renderer.render();
+		
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
@@ -65,7 +75,9 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
+		camera.viewportHeight = height;
+		camera.viewportWidth = width;
+		camera.update();
 
 	}
 
@@ -83,13 +95,14 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
+		dispose();
 
 	}
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
+		map.dispose();
+		renderer.dispose();
 
 	}
 
