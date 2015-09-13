@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" nextobjectid="1">
+ <tileset firstgid="1" name="mario" tilewidth="16" tileheight="16" tilecount="702">
+  <image source="mario.png" width="630" height="302"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJzt0zEOgCAQBMClF/7/Sf4ghfYUKJpMMe3msnfXS9IBAAAAAAAA4HIkqUPL/lmw7930M6cs6GdFxhNZb9yFO+NLav7p/p8TI4DbbQ==
+  </data>
+ </layer>
+ <imagelayer name="sky"/>
+</map>
