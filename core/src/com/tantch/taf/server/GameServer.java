@@ -31,4 +31,8 @@ public class GameServer {
 		server.start();
 	}
 
+	public void dispose() {
+		server.stop(0);
+	}
+
 }

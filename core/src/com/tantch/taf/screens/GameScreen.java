@@ -31,6 +31,7 @@ public class GameScreen implements Screen {
 		GameServer.init();
 		game = gam;
 		Fighter fighter = new Fighter(game);
+		fighters= new HashMap<String,Fighter>();
 		fighters.put("mau", fighter);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 600);
@@ -112,6 +113,7 @@ public class GameScreen implements Screen {
 	public void dispose() {
 		map.dispose();
 		renderer.dispose();
+		server.dispose();
 
 	}
 
