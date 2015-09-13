@@ -7,10 +7,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.tantch.taf.TAFGame;
+import com.tantch.taf.entities.Dummy;
 import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.inputs.GameProcessor;
 import com.tantch.taf.server.GameServer;
@@ -20,6 +24,7 @@ public class GameScreen implements Screen {
 	final TAFGame game;
 	private TiledMap map;
 	private OrthogonalTiledMapRenderer renderer;
+	private Dummy dummy;
 
 	OrthographicCamera camera;
 	private static HashMap<String, Fighter> fighters;
@@ -28,11 +33,8 @@ public class GameScreen implements Screen {
 	public GameScreen(final TAFGame gam) throws IOException {
 		server = new GameServer(7777, "/fighter", new GameServerHandler(this));
 
-		GameServer.init();
+//		GameServer.init();
 		game = gam;
-		Fighter fighter = new Fighter(game);
-		fighters= new HashMap<String,Fighter>();
-		fighters.put("mau", fighter);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 600);
 		Gdx.input.setInputProcessor(new GameProcessor(this));
@@ -44,6 +46,12 @@ public class GameScreen implements Screen {
 		renderer = new OrthogonalTiledMapRenderer(map);
 
 		camera = new OrthographicCamera();
+		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0));
+		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), 20 * fighter.getCollisionLayer().getHeight());
+		fighters= new HashMap<String,Fighter>();
+		fighters.put("mau", fighter);
+//		dummy = new Dummy(new Sprite(new Texture("img/player.png")),(TiledMapTileLayer)map.getLayers().get(0));
+//		dummy.setPosition(5 * dummy.getCollisionLayer().getTileWidth(), 20 * dummy.getCollisionLayer().getHeight());
 
 	}
 
@@ -56,7 +64,13 @@ public class GameScreen implements Screen {
 
 		renderer.setView(camera);
 		renderer.render();
-
+//
+//		renderer.getBatch().begin();
+//		dummy.draw(renderer.getBatch());
+//		renderer.getBatch().end();
+		
+		
+		
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
@@ -78,7 +92,7 @@ public class GameScreen implements Screen {
 			//
 			// }
 
-			fighters.forEach((k, v) -> v.draw(delta));
+			fighters.forEach((k, v) -> v.draw(delta)); 
 		}
 		game.batch.end();
 	}
@@ -114,6 +128,7 @@ public class GameScreen implements Screen {
 		map.dispose();
 		renderer.dispose();
 		server.dispose();
+//		dummy.getTexture().dispose();
 
 	}
 

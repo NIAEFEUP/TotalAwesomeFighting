@@ -3,12 +3,13 @@ package com.tantch.taf.entities;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
 
 public class Fighter {
 
 	private int JUMPPOWER = 55;
-	private int GRAVITY = -5;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -36,12 +37,18 @@ public class Fighter {
 	private int frameSkip = 0;
 	private int curFrame;
 	private int dir;
-	private int x, y;
 	private String action;
 	private String standByAction;
 	private boolean onGoingAction = false;
+	private int x,y;
+	//novo
+	private Vector2 velocity = new Vector2();
+	private float speed = 60 * 2, gravity = 60 * 1.8f;
 
-	public Fighter(TAFGame game) {
+	private TiledMapTileLayer collisionLayer;
+
+	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer) {
+		this.collisionLayer = collisionLayer;
 		bodySpriteName = "BODY_male.png";
 		beltSpriteName = "BELT_leather.png";
 		feetSpriteName = "FEET_shoes_brown.png";
@@ -58,8 +65,6 @@ public class Fighter {
 		action = "idle";
 		standByAction = "idle";
 		setTextures();
-		x = 200;
-		y = 200;
 	}
 
 	private void setTextures() {
@@ -137,7 +142,91 @@ public class Fighter {
 		}
 	}
 
+	public void update(float delta){
+		velocity.y -= gravity * delta;
+
+		if(velocity.y > speed)
+			velocity.y = speed;
+		else if(velocity.y < speed)
+			velocity.y = -speed;
+
+		float oldX = x, oldY = y, tileWidth = collisionLayer.getTileWidth(), tileHeight = collisionLayer.getTileHeight();
+		boolean collisionX = false, collisionY = false;
+
+		x = (int) (x + velocity.x * delta);
+
+		if(velocity.x < 0){
+			//topleft
+			collisionX = collisionLayer.getCell((int) (x / tileWidth),(int) ((y + height)/ tileHeight))
+					.getTile().getProperties().containsKey("blocked");
+			//middleleft
+			if(!collisionX)
+				collisionX = collisionLayer.getCell((int) (x / tileWidth),(int) ((y + (height / 2))/ tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+			//bottomleft
+			if(!collisionX)
+
+				collisionX = collisionLayer.getCell((int) (x / tileWidth),(int) (y / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+
+		} else if( velocity.x > 0){
+			//top right
+			collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth),(int) ((y + height)/ tileHeight))
+					.getTile().getProperties().containsKey("blocked");
+			//middle right
+			if(!collisionX)
+				collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth),(int) ((y + (height / 2))/ tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+			//bottom right
+			if(!collisionX)
+				collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth),(int) (y / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+
+		}
+
+		if(collisionX){
+			x = (int) oldX;
+			velocity.x = 0;
+		}
+
+		y = (int) (y + velocity.y * delta);
+
+		if(velocity.y < 0){
+			//bottom left
+			collisionY = collisionLayer.getCell((int) (x / tileWidth),(int) (y / tileHeight))
+					.getTile().getProperties().containsKey("blocked");
+			//bottom middle
+			if(!collisionY)
+				collisionY = collisionLayer.getCell((int) ((x + (width / 2)) / tileWidth),(int) (y / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+			//bottom right
+			if(!collisionY)
+				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth),(int) (y / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+
+		} else if( velocity.y > 0){
+			//top left
+			collisionY = collisionLayer.getCell((int) (x / tileWidth),(int) ((y + height) / tileHeight))
+					.getTile().getProperties().containsKey("blocked");
+			//top middle
+			if(!collisionY)
+				collisionY = collisionLayer.getCell((int) ((x + (width / 2)) / tileWidth),(int) ((y + height) / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+			//top right
+			if(!collisionY)
+				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth),(int) ((y + height) / tileHeight))
+				.getTile().getProperties().containsKey("blocked");
+		}
+
+		if(collisionY){
+			y = (int) oldY;
+			velocity.y = 0;
+		}
+	}
+
+
 	public void draw(float delta) {
+		/*
 		time += delta;
 
 		if (time > 1.0f / 30.0f) {
@@ -158,7 +247,10 @@ public class Fighter {
 			time = 0;
 
 		}
-
+		 */
+		
+		update(delta);
+		
 		int framx = (curFrame + frameSkip) * width;
 		int framy = dir * height;
 		game.batch.setColor(1f, 1f, 1f, 1f);
@@ -170,6 +262,20 @@ public class Fighter {
 		game.batch.draw(headSprite, x, y, width, height, framx, framy, width, height, false, false);
 		game.batch.draw(torsoSprite, x, y, width, height, framx, framy, width, height, false, false);
 
+	}
+
+	public TiledMapTileLayer getCollisionLayer() {
+		return collisionLayer;
+	}
+
+	public void setCollisionLayer(TiledMapTileLayer collisionLayer) {
+		this.collisionLayer = collisionLayer;
+	}
+
+	public void setPosition(int x, int y) {
+		this.x = x;
+		this.y = y;	
+		
 	}
 
 }

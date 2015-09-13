@@ -1,12 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" nextobjectid="1">
- <tileset firstgid="1" name="mario" tilewidth="16" tileheight="16" tilecount="702">
-  <image source="mario.png" width="630" height="302"/>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="25" height="25" tilewidth="32" tileheight="32" nextobjectid="1">
+ <tileset firstgid="1" name="tiles" tilewidth="32" tileheight="32" tilecount="240">
+  <image source="tiles.png" width="512" height="480"/>
  </tileset>
- <layer name="Tile Layer 1" width="50" height="50">
+ <tileset firstgid="241" name="mario" tilewidth="32" tileheight="32" tilecount="144">
+  <image source="mario.png" width="384" height="384"/>
+  <tile id="2">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="25" height="25">
   <data encoding="base64" compression="zlib">
-   eJzt0zEOgCAQBMClF/7/Sf4ghfYUKJpMMe3msnfXS9IBAAAAAAAA4HIkqUPL/lmw7930M6cs6GdFxhNZb9yFO+NLav7p/p8TI4DbbQ==
+   eJwTZmBgEB7Fo3gUj+JRPIpH8SgmEn8G4i9A/JUCNrLYNyx2/AdiBkYgYiSfjSzGxDjw4UZtDADgOUZa
   </data>
  </layer>
- <imagelayer name="sky"/>
 </map>
