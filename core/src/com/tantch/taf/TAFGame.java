@@ -1,5 +1,7 @@
 package com.tantch.taf;
 
+import java.io.IOException;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -16,7 +18,12 @@ public class TAFGame extends Game {
 		batch = new SpriteBatch();
 		font = new BitmapFont(Gdx.files.internal("font/roboto.fnt"),false);
 		font.setColor(Color.BLACK);
-		this.setScreen(new GameScreen(this));
+		try {
+			this.setScreen(new GameScreen(this));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

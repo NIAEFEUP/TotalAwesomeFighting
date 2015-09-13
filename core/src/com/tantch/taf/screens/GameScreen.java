@@ -1,5 +1,8 @@
 package com.tantch.taf.screens;
 
+import java.io.IOException;
+import java.util.HashMap;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -7,18 +10,22 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.tantch.taf.TAFGame;
 import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.inputs.GameProcessor;
-
+import com.tantch.taf.server.GameServer;
+import com.tantch.taf.server.GameServerHandler;
 public class GameScreen implements Screen {
 	final TAFGame game;
-	Fighter fighter;
 	OrthographicCamera camera;
+	private static HashMap<String, Fighter> fighters;
+	private GameServer server;
+	public GameScreen(final TAFGame gam) throws IOException {
+		server = new GameServer(7777, "/fighter", new GameServerHandler(this));
 
-	public GameScreen(final TAFGame gam) {
+		GameServer.init();
 		game = gam;
-		fighter = new Fighter(game);
+		Fighter fighter = new Fighter(game);
+		fighters.put("mau", fighter);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 600);
-
 		Gdx.input.setInputProcessor(new GameProcessor(this));
 	}
 
@@ -56,7 +63,7 @@ public class GameScreen implements Screen {
 			//
 			// }
 
-			fighter.draw(delta);
+			fighters.forEach((k,v) -> v.draw(delta));
 		}
 		game.batch.end();
 	}
@@ -92,7 +99,7 @@ public class GameScreen implements Screen {
 	}
 
 	public Fighter getFighter() {
-		return fighter;
+		return fighters.get("mau");
 	}
 
 }
