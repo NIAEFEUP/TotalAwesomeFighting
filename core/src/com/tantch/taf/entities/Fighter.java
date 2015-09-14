@@ -246,10 +246,12 @@ public class Fighter implements InputProcessor {
 		}
 
 		fighters.forEach((k, v) -> {
+
 			if (!k.equals(name)) {
 				if (((x + (realWidth / 2)-3) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) {
 					v.getPushed("right", 10);
 					collided = true;
+
 					return;
 				}
 			}
@@ -267,11 +269,13 @@ public class Fighter implements InputProcessor {
 		}
 
 		fighters.forEach((k, v) -> {
+
 			if (!k.equals(name))
 				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
 					v.getPushed("left", 10);
 
 					collided = true;
+
 					return;
 				}
 		});
