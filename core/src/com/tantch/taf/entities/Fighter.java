@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
 
@@ -150,35 +151,10 @@ public class Fighter implements InputProcessor{
 
 		x = (int) (x + velocity.x * delta);
 
-		if (velocity.x < 0) {
-			// topleft
-			collisionX = collisionLayer.getCell((int) (x / tileWidth), (int) ((y + height) / tileHeight)).getTile()
-					.getProperties().containsKey("blocked");
-			// middleleft
-			if (!collisionX)
-				collisionX = collisionLayer.getCell((int) (x / tileWidth), (int) ((y + (height / 2)) / tileHeight))
-				.getTile().getProperties().containsKey("blocked");
-			// bottomleft
-			if (!collisionX)
-
-				collisionX = collisionLayer.getCell((int) (x / tileWidth), (int) (y / tileHeight)).getTile()
-				.getProperties().containsKey("blocked");
-
-		} else if (velocity.x > 0) {
-			// top right
-			collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) ((y + height) / tileHeight))
-					.getTile().getProperties().containsKey("blocked");
-			// middle right
-			if (!collisionX)
-				collisionX = collisionLayer
-				.getCell((int) ((x + width) / tileWidth), (int) ((y + (height / 2)) / tileHeight)).getTile()
-				.getProperties().containsKey("blocked");
-			// bottom right
-			if (!collisionX)
-				collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) (y / tileHeight)).getTile()
-				.getProperties().containsKey("blocked");
-
-		}
+		if (velocity.x < 0)
+			collisionX = collidesLeft();
+		else if (velocity.x > 0)
+			collisionX = collidesRight();
 
 		if (collisionX) {
 			x = (int) oldX;
@@ -188,41 +164,56 @@ public class Fighter implements InputProcessor{
 		y = (int) (y + velocity.y * delta);
 
 		if (velocity.y < 0) {
-			// bottom left
-			collisionY = collisionLayer.getCell((int) (x / tileWidth), (int) (y / tileHeight)).getTile().getProperties()
-					.containsKey("blocked");
-			// bottom middle
-			if (!collisionY)
-				collisionY = collisionLayer.getCell((int) ((x + (width / 2)) / tileWidth), (int) (y / tileHeight))
-				.getTile().getProperties().containsKey("blocked");
-			// bottom right
-			if (!collisionY)
-				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) (y / tileHeight)).getTile()
-				.getProperties().containsKey("blocked");
+			collisionY = collidesBottom();
 
 			canJump = collisionY;
 			if(collisionY)
 				stop("jump");
 
-		} else if (velocity.y > 0) {
-			// top left
-			collisionY = collisionLayer.getCell((int) (x / tileWidth), (int) ((y + height) / tileHeight)).getTile()
-					.getProperties().containsKey("blocked");
-			// top middle
-			if (!collisionY)
-				collisionY = collisionLayer
-				.getCell((int) ((x + (width / 2)) / tileWidth), (int) ((y + height) / tileHeight)).getTile()
-				.getProperties().containsKey("blocked");
-			// top right
-			if (!collisionY)
-				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) ((y + height) / tileHeight))
-				.getTile().getProperties().containsKey("blocked");
-		}
+		} else if (velocity.y > 0) 
+			collisionY = collidesTop();
 
 		if (collisionY) {
 			y = (int) oldY;
 			velocity.y = 0;
 		}
+	}
+
+	private boolean isCellBlocked(float x, float y){
+		Cell cell = collisionLayer.getCell((int) (x / collisionLayer.getTileWidth()) , (int) (y / collisionLayer.getTileHeight()));
+		return cell != null && cell.getTile() != null && cell.getTile().getProperties().containsKey("blocked");
+	}
+
+	public boolean collidesRight(){
+		for(float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)){
+			if(isCellBlocked(x + width, y + step))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean collidesLeft(){
+		for(float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)){
+			if(isCellBlocked(x, y + step))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean collidesTop(){
+		for(float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)){
+			if(isCellBlocked(x + step, y + height))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean collidesBottom(){
+		for(float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)){
+			if(isCellBlocked(x + step, y))
+				return true;
+		}
+		return false;
 	}
 
 	public int getX() {
