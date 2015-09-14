@@ -11,8 +11,8 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
-import com.tantch.taf.entities.Dummy;
 import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.server.GameServer;
 import com.tantch.taf.server.GameServerHandler;
@@ -21,7 +21,6 @@ public class GameScreen implements Screen {
 	final TAFGame game;
 	private TiledMap map;
 	private OrthogonalTiledMapRenderer renderer;
-	private Dummy dummy;
 
 	OrthographicCamera camera;
 	private static HashMap<String, Fighter> fighters;
@@ -30,7 +29,7 @@ public class GameScreen implements Screen {
 	public GameScreen(final TAFGame gam) throws IOException {
 		server = new GameServer(7777, "/fighter", new GameServerHandler(this));
 
-//		GameServer.init();
+		GameServer.init();
 		game = gam;
 	}
 
@@ -40,17 +39,17 @@ public class GameScreen implements Screen {
 		renderer = new OrthogonalTiledMapRenderer(map);
 
 		camera = new OrthographicCamera();
-		//System.out.println("x: " + camera.position.x + " y: " + camera.position.y);
 		camera.position.set((((TiledMapTileLayer)map.getLayers().get(0)).getWidth() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileWidth()) / 2,
 				(((TiledMapTileLayer)map.getLayers().get(0)).getHeight() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileHeight()) / 2 , 0);
-		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0));
-		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters= new HashMap<String,Fighter>();
-		fighters.put("mau", fighter);
+		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0),"1", fighters);
+		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
+		fighters.put("1", fighter);
 		Gdx.input.setInputProcessor(fighter);
-//		dummy = new Dummy(new Sprite(new Texture("img/player.png")),(TiledMapTileLayer)map.getLayers().get(0));
-//		dummy.setPosition(5 * dummy.getCollisionLayer().getTileWidth(), 20 * dummy.getCollisionLayer().getHeight());
 
+		Fighter fighter1 = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0),"2", fighters);
+		fighter1.setPosition( (int) (7 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
+		fighters.put("2", fighter1);
 	}
 
 	@Override
