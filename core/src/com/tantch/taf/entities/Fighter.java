@@ -1,15 +1,17 @@
 package com.tantch.taf.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
 
-public class Fighter {
+public class Fighter implements InputProcessor{
 
-	private int JUMPPOWER = 55;
+	private int JUMPPOWER = 200;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -37,11 +39,11 @@ public class Fighter {
 	private int dir;
 	private String action;
 	private String standByAction;
-	private boolean onGoingAction = false;
 	private int x, y;
 	// novo
 	private Vector2 velocity = new Vector2();
-	private float speed = 60 * 2, gravity = 60 * 1.8f;
+	private float speed = 120, gravity = 240;
+	private boolean canJump;
 
 	private TiledMapTileLayer collisionLayer;
 
@@ -73,20 +75,19 @@ public class Fighter {
 			dir = 1;
 			framesNumber = 9;
 			frameSkip = 0;
-			velocity.x = -5;
+			velocity.x = -speed;
 			break;
 		case "right":
 			folder = "walkcycle/";
 			dir = 3;
 			framesNumber = 9;
 			frameSkip = 0;
-			velocity.x = 5;
+			velocity.x = speed;
 			break;
 		case "jump":
 			folder = "bow/";
 			framesNumber = 1;
 			frameSkip = 2;
-			onGoingAction = true;
 			velocity.y = JUMPPOWER;
 			break;
 		case "idle":
@@ -143,11 +144,6 @@ public class Fighter {
 	public void update(float delta) {
 		velocity.y -= gravity * delta;
 
-		if (velocity.y > speed)
-			velocity.y = speed;
-		else if (velocity.y < speed)
-			velocity.y = -speed;
-
 		float oldX = x, oldY = y, tileWidth = collisionLayer.getTileWidth(),
 				tileHeight = collisionLayer.getTileHeight();
 		boolean collisionX = false, collisionY = false;
@@ -161,12 +157,12 @@ public class Fighter {
 			// middleleft
 			if (!collisionX)
 				collisionX = collisionLayer.getCell((int) (x / tileWidth), (int) ((y + (height / 2)) / tileHeight))
-						.getTile().getProperties().containsKey("blocked");
+				.getTile().getProperties().containsKey("blocked");
 			// bottomleft
 			if (!collisionX)
 
 				collisionX = collisionLayer.getCell((int) (x / tileWidth), (int) (y / tileHeight)).getTile()
-						.getProperties().containsKey("blocked");
+				.getProperties().containsKey("blocked");
 
 		} else if (velocity.x > 0) {
 			// top right
@@ -175,12 +171,12 @@ public class Fighter {
 			// middle right
 			if (!collisionX)
 				collisionX = collisionLayer
-						.getCell((int) ((x + width) / tileWidth), (int) ((y + (height / 2)) / tileHeight)).getTile()
-						.getProperties().containsKey("blocked");
+				.getCell((int) ((x + width) / tileWidth), (int) ((y + (height / 2)) / tileHeight)).getTile()
+				.getProperties().containsKey("blocked");
 			// bottom right
 			if (!collisionX)
 				collisionX = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) (y / tileHeight)).getTile()
-						.getProperties().containsKey("blocked");
+				.getProperties().containsKey("blocked");
 
 		}
 
@@ -198,11 +194,15 @@ public class Fighter {
 			// bottom middle
 			if (!collisionY)
 				collisionY = collisionLayer.getCell((int) ((x + (width / 2)) / tileWidth), (int) (y / tileHeight))
-						.getTile().getProperties().containsKey("blocked");
+				.getTile().getProperties().containsKey("blocked");
 			// bottom right
 			if (!collisionY)
 				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) (y / tileHeight)).getTile()
-						.getProperties().containsKey("blocked");
+				.getProperties().containsKey("blocked");
+
+			canJump = collisionY;
+			if(collisionY)
+				stop("jump");
 
 		} else if (velocity.y > 0) {
 			// top left
@@ -211,12 +211,12 @@ public class Fighter {
 			// top middle
 			if (!collisionY)
 				collisionY = collisionLayer
-						.getCell((int) ((x + (width / 2)) / tileWidth), (int) ((y + height) / tileHeight)).getTile()
-						.getProperties().containsKey("blocked");
+				.getCell((int) ((x + (width / 2)) / tileWidth), (int) ((y + height) / tileHeight)).getTile()
+				.getProperties().containsKey("blocked");
 			// top right
 			if (!collisionY)
 				collisionY = collisionLayer.getCell((int) ((x + width) / tileWidth), (int) ((y + height) / tileHeight))
-						.getTile().getProperties().containsKey("blocked");
+				.getTile().getProperties().containsKey("blocked");
 		}
 
 		if (collisionY) {
@@ -225,15 +225,27 @@ public class Fighter {
 		}
 	}
 
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
 	public void draw(float delta) {
 
 		time += delta;
 
 		if (time > 1.0f / 30.0f) {
-			if (velocity.y == 0 && action=="jump") {
-
-				stop("jump");
-			}
 			curFrame++;
 			if (curFrame >= framesNumber) {
 				curFrame = 0;
@@ -269,6 +281,76 @@ public class Fighter {
 		this.x = x;
 		this.y = y;
 
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		switch (keycode) {
+		case Keys.W:
+			if(canJump){
+				start("jump");
+				canJump = false;
+			}
+			break;
+		case Keys.A:
+			start("left");
+			break;
+		case Keys.D:
+			start("right");
+			break;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		switch (keycode) {
+		case Keys.W:
+			break;
+		case Keys.A:
+			stop("left");
+			break;
+		case Keys.D:
+			stop("right");
+			break;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

@@ -7,8 +7,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -16,7 +14,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.tantch.taf.TAFGame;
 import com.tantch.taf.entities.Dummy;
 import com.tantch.taf.entities.Fighter;
-import com.tantch.taf.inputs.GameProcessor;
 import com.tantch.taf.server.GameServer;
 import com.tantch.taf.server.GameServerHandler;
 
@@ -35,9 +32,6 @@ public class GameScreen implements Screen {
 
 //		GameServer.init();
 		game = gam;
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 600);
-		Gdx.input.setInputProcessor(new GameProcessor(this));
 	}
 
 	@Override
@@ -46,10 +40,14 @@ public class GameScreen implements Screen {
 		renderer = new OrthogonalTiledMapRenderer(map);
 
 		camera = new OrthographicCamera();
+		System.out.println("x: " + camera.position.x + " y: " + camera.position.y);
+		camera.position.set((((TiledMapTileLayer)map.getLayers().get(0)).getWidth() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileWidth()) / 2,
+				(((TiledMapTileLayer)map.getLayers().get(0)).getHeight() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileHeight()) / 2 , 0);
 		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0));
-		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), 20 * fighter.getCollisionLayer().getHeight());
+		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters= new HashMap<String,Fighter>();
 		fighters.put("mau", fighter);
+		Gdx.input.setInputProcessor(fighter);
 //		dummy = new Dummy(new Sprite(new Texture("img/player.png")),(TiledMapTileLayer)map.getLayers().get(0));
 //		dummy.setPosition(5 * dummy.getCollisionLayer().getTileWidth(), 20 * dummy.getCollisionLayer().getHeight());
 
@@ -101,9 +99,7 @@ public class GameScreen implements Screen {
 	public void resize(int width, int height) {
 		camera.viewportHeight = height;
 		camera.viewportWidth = width;
-		camera.update();
-
-	}
+		}
 
 	@Override
 	public void pause() {
