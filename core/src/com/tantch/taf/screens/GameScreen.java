@@ -1,6 +1,7 @@
 package com.tantch.taf.screens;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
@@ -39,16 +40,22 @@ public class GameScreen implements Screen {
 		renderer = new OrthogonalTiledMapRenderer(map);
 
 		camera = new OrthographicCamera();
-		camera.position.set((((TiledMapTileLayer)map.getLayers().get(0)).getWidth() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileWidth()) / 2,
-				(((TiledMapTileLayer)map.getLayers().get(0)).getHeight() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileHeight()) / 2 , 0);
-		fighters= new HashMap<String,Fighter>();
-		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0),"1", fighters);
-		fighter.setPosition( (int) (5 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
+		camera.position.set(
+				(((TiledMapTileLayer) map.getLayers().get(0)).getWidth()
+						* ((TiledMapTileLayer) map.getLayers().get(0)).getTileWidth()) / 2,
+				(((TiledMapTileLayer) map.getLayers().get(0)).getHeight()
+						* ((TiledMapTileLayer) map.getLayers().get(0)).getTileHeight()) / 2,
+				0);
+		fighters = new HashMap<String, Fighter>();
+		Fighter fighter = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "1", fighters);
+		fighter.setPosition((int) (5 * fighter.getCollisionLayer().getTileWidth()),
+				(fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters.put("1", fighter);
 		Gdx.input.setInputProcessor(fighter);
 
-		Fighter fighter1 = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0),"2", fighters);
-		fighter1.setPosition( (int) (7 * fighter.getCollisionLayer().getTileWidth()), (fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
+		Fighter fighter1 = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "2", fighters);
+		fighter1.setPosition((int) (7 * fighter.getCollisionLayer().getTileWidth()),
+				(fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters.put("2", fighter1);
 	}
 
@@ -61,35 +68,22 @@ public class GameScreen implements Screen {
 
 		renderer.setView(camera);
 		renderer.render();
-//
-//		renderer.getBatch().begin();
-//		dummy.draw(renderer.getBatch());
-//		renderer.getBatch().end();
-		
-		
-		
+		//
+		// renderer.getBatch().begin();
+		// dummy.draw(renderer.getBatch());
+		// renderer.getBatch().end();
+
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
 		{
-			// game.font.draw(game.batch, "Dummy Fighter", 300, 580);
-			// for (int i = 0; i < Stats.names.length; i++) {
-			// String name = Stats.names[i];
-			// int[] temp = dummy.getAtrib(name);
-			//
-			// if (temp[2] != -1) {
-			// game.font.draw(game.batch, name + " : " + temp[2] + "/" + temp[1]
-			// + " -- " + temp[0], 100,
-			// 500 - 50 * i);
-			//
-			// } else {
-			// game.font.draw(game.batch, name + " : " + temp[1] + " -- " +
-			// temp[0], 100, 500 - 50 * i);
-			// }
-			//
-			// }
 
-			fighters.forEach((k, v) -> v.draw(delta)); 
+			fighters.forEach((k, v) -> v.draw(delta));
+			for (String string : game.dead) {
+				fighters.remove(string);
+				System.out.println("killed : " + string);
+			}
+			game.dead = new ArrayList<String>();
 		}
 		game.batch.end();
 	}
@@ -98,7 +92,7 @@ public class GameScreen implements Screen {
 	public void resize(int width, int height) {
 		camera.viewportHeight = height;
 		camera.viewportWidth = width;
-		}
+	}
 
 	@Override
 	public void pause() {
@@ -123,7 +117,7 @@ public class GameScreen implements Screen {
 		map.dispose();
 		renderer.dispose();
 		server.dispose();
-//		dummy.getTexture().dispose();
+		// dummy.getTexture().dispose();
 
 	}
 
