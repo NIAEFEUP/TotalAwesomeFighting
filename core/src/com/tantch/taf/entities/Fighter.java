@@ -10,7 +10,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
 
-public class Fighter implements InputProcessor{
+public class Fighter implements InputProcessor {
 
 	private int JUMPPOWER = 200;
 	// TODO falta por as outras partes do torso
@@ -31,7 +31,11 @@ public class Fighter implements InputProcessor{
 	private TAFGame game;
 	private Color taint;
 	private int width = 64;
-	private int height = 65;
+	private int height = 64;
+	private int leftmargin = 16;
+	private int topmargin = 15;
+	private int realWidth=32;
+	private int realHeight=45;
 	private int framesNumber;
 	private float time;
 
@@ -167,10 +171,10 @@ public class Fighter implements InputProcessor{
 			collisionY = collidesBottom();
 
 			canJump = collisionY;
-			if(collisionY)
+			if (collisionY)
 				stop("jump");
 
-		} else if (velocity.y > 0) 
+		} else if (velocity.y > 0)
 			collisionY = collidesTop();
 
 		if (collisionY) {
@@ -179,38 +183,39 @@ public class Fighter implements InputProcessor{
 		}
 	}
 
-	private boolean isCellBlocked(float x, float y){
-		Cell cell = collisionLayer.getCell((int) (x / collisionLayer.getTileWidth()) , (int) (y / collisionLayer.getTileHeight()));
+	private boolean isCellBlocked(float x, float y) {
+		Cell cell = collisionLayer.getCell((int) (x / collisionLayer.getTileWidth()),
+				(int) (y / collisionLayer.getTileHeight()));
 		return cell != null && cell.getTile() != null && cell.getTile().getProperties().containsKey("blocked");
 	}
 
-	public boolean collidesRight(){
-		for(float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)){
-			if(isCellBlocked(x + width, y + step))
+	public boolean collidesRight() {
+		for (float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)) {
+			if (isCellBlocked(x + realWidth, y + step))
 				return true;
 		}
 		return false;
 	}
 
-	public boolean collidesLeft(){
-		for(float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)){
-			if(isCellBlocked(x, y + step))
+	public boolean collidesLeft() {
+		for (float step = 0; step < height; step += (collisionLayer.getTileHeight() / 2)) {
+			if (isCellBlocked(x, y + step))
 				return true;
 		}
 		return false;
 	}
 
-	public boolean collidesTop(){
-		for(float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)){
-			if(isCellBlocked(x + step, y + height))
+	public boolean collidesTop() {
+		for (float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)) {
+			if (isCellBlocked(x + step, y + realHeight))
 				return true;
 		}
 		return false;
 	}
 
-	public boolean collidesBottom(){
-		for(float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)){
-			if(isCellBlocked(x + step, y))
+	public boolean collidesBottom() {
+		for (float step = 0; step < width; step += (collisionLayer.getTileWidth() / 2)) {
+			if (isCellBlocked(x + step, y ))
 				return true;
 		}
 		return false;
@@ -250,14 +255,27 @@ public class Fighter implements InputProcessor{
 		int framx = (curFrame + frameSkip) * width;
 		int framy = dir * height;
 		game.batch.setColor(1f, 1f, 1f, 1f);
-		game.batch.draw(bodySprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(beltSprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(feetSprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(handsSprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(legsSprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(headSprite, x, y, width, height, framx, framy, width, height, false, false);
-		game.batch.draw(torsoSprite, x, y, width, height, framx, framy, width, height, false, false);
-
+		game.batch.draw(bodySprite, x, y, realWidth,realHeight, framx + leftmargin, framy + topmargin, realWidth,realHeight, false, false);
+		/*
+		 * game.batch.draw(beltSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 * game.batch.draw(feetSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 * game.batch.draw(handsSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 * game.batch.draw(legsSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 * game.batch.draw(headSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 * game.batch.draw(torsoSprite, x, y, width - rightmargin - leftmargin,
+		 * height - downmargin - topmargin, framx + leftmargin, framy +
+		 * topmargin, width - rightmargin, height - downmargin, false, false);
+		 */
 	}
 
 	public TiledMapTileLayer getCollisionLayer() {
@@ -278,7 +296,7 @@ public class Fighter implements InputProcessor{
 	public boolean keyDown(int keycode) {
 		switch (keycode) {
 		case Keys.W:
-			if(canJump){
+			if (canJump) {
 				start("jump");
 				canJump = false;
 			}

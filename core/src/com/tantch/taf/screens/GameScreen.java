@@ -40,7 +40,7 @@ public class GameScreen implements Screen {
 		renderer = new OrthogonalTiledMapRenderer(map);
 
 		camera = new OrthographicCamera();
-		System.out.println("x: " + camera.position.x + " y: " + camera.position.y);
+		//System.out.println("x: " + camera.position.x + " y: " + camera.position.y);
 		camera.position.set((((TiledMapTileLayer)map.getLayers().get(0)).getWidth() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileWidth()) / 2,
 				(((TiledMapTileLayer)map.getLayers().get(0)).getHeight() * ((TiledMapTileLayer)map.getLayers().get(0)).getTileHeight()) / 2 , 0);
 		Fighter fighter = new Fighter(game,(TiledMapTileLayer)map.getLayers().get(0));
