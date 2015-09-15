@@ -14,7 +14,7 @@ import com.tantch.taf.TAFGame;
 
 public class Fighter implements InputProcessor {
 
-	private int JUMPPOWER = 400;
+	private int JUMPPOWER = 800;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -66,7 +66,6 @@ public class Fighter implements InputProcessor {
 
 	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters) {
 		this.collisionLayer = collisionLayer;
-
 		leftPush = 0;
 		rightPush = 0;
 		resistancePush = 10;
@@ -93,6 +92,7 @@ public class Fighter implements InputProcessor {
 		this.name = name;
 		collided = false;
 		setTextures();
+		System.out.println("merda 3");
 	}
 
 	public String getName() {
@@ -134,7 +134,6 @@ public class Fighter implements InputProcessor {
 			velocity.x = 0;
 			break;
 		}
-
 		bodySprite = new Texture(Gdx.files.internal(folder + bodySpriteName));
 		beltSprite = new Texture(Gdx.files.internal(folder + beltSpriteName));
 		feetSprite = new Texture(Gdx.files.internal(folder + feetSpriteName));
@@ -147,6 +146,11 @@ public class Fighter implements InputProcessor {
 	public void start(String act) {
 
 		if (act.equals("jump")) {
+			
+			if(velocity.y >0){
+				return;
+			}
+			
 			standByAction = action;
 			action = act;
 			curFrame = 0;
@@ -164,7 +168,11 @@ public class Fighter implements InputProcessor {
 	}
 
 	public void stop(String act) {
-		if (!action.equals(act)) {
+		if(standByAction.equals(act)){
+			standByAction = "idle";
+		}
+
+			if (!action.equals(act)) {
 			if (act.equals(standByAction)) {
 				standByAction = "idle";
 			}
@@ -218,6 +226,10 @@ public class Fighter implements InputProcessor {
 				velocity.x = 0;
 			}
 		}
+		
+		if(y <-200){
+			game.dead.add(name);
+		}
 
 	}
 
@@ -267,6 +279,10 @@ public class Fighter implements InputProcessor {
 			if (isCellBlocked(x+5, y + step))
 				return true;
 		}
+		if (collided) {
+			collided = false;
+			return true;
+		}
 
 		fighters.forEach((k, v) -> {
 
@@ -279,10 +295,8 @@ public class Fighter implements InputProcessor {
 					return;
 				}
 		});
-		if (collided) {
-			collided = false;
-			return true;
-		}
+		
+		collided = false;
 		return false;
 	}
 
@@ -302,11 +316,14 @@ public class Fighter implements InputProcessor {
 		fighters.forEach((k, v) -> {
 			if (!k.equals(name)) {
 				if (((y - (realHeight / 2)) <= (v.getY() + (v.realHeight / 2)))
+						&& (y - (realHeight / 2)) > v.getY()
 						&& (x + (realWidth / 2) >= v.getX() - (v.realWidth / 2))
 						&& (x - (realWidth / 2) <= v.getX() + (v.realWidth / 2))) {
 					v.collided = true;
 					collided = true;
 					game.dead.add(k);
+					//System.out.println("player is in : " + x + ","  + y);
+					//System.out.println(name+  " colided with : " + k );
 					return;
 				}
 			}

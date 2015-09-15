@@ -26,10 +26,11 @@ public class GameScreen implements Screen {
 	OrthographicCamera camera;
 	private static HashMap<String, Fighter> fighters;
 	private GameServer server;
+	private ArrayList<String> newfighters;
 
 	public GameScreen(final TAFGame gam) throws IOException {
 		server = new GameServer(7777, "/fighter", new GameServerHandler(this));
-
+		newfighters = new ArrayList<String>();
 		GameServer.init();
 		game = gam;
 	}
@@ -61,7 +62,7 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0.5f, 0.8f, 0.5f, 1);
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		camera.update();
@@ -84,6 +85,15 @@ public class GameScreen implements Screen {
 				System.out.println("killed : " + string);
 			}
 			game.dead = new ArrayList<String>();
+			for (String string : newfighters) {
+				Fighter temp = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), string, fighters);
+				temp.setPosition(400, 200);
+				fighters.put(string, temp);
+				System.out.println("LOG fighters sze : " + fighters.size());
+				
+			}
+			newfighters = new ArrayList<String>();
+			//
 		}
 		game.batch.end();
 	}
@@ -122,7 +132,18 @@ public class GameScreen implements Screen {
 	}
 
 	public Fighter getFighter() {
-		return fighters.get("mau");
+		return fighters.get("1");
+	}
+
+	public Fighter getFighter(String nick) {
+
+		return fighters.get(nick);
+	}
+
+	public void addFighter(String nick) {
+		newfighters.add(nick);
+		
+		
 	}
 
 }

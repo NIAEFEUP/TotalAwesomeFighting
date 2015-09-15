@@ -3,9 +3,10 @@ package com.tantch.taf.server;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.sun.net.httpserver.Headers;
+import com.badlogic.gdx.Input.Keys;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.screens.GameScreen;
 
 public class GameServerHandler implements HttpHandler {
@@ -18,7 +19,7 @@ public class GameServerHandler implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange t) throws IOException {
-		System.out.println("LOG" + t.getRequestURI().getPath());
+		//System.out.println("LOG" + t.getRequestURI().getPath());
 		System.out.println("LOG" + t.getRequestURI().getQuery());
 		String path = t.getRequestURI().getPath();
 		String[] paths = path.split("/");// paths[0] é vazio , paths[1] é sempre
@@ -28,28 +29,87 @@ public class GameServerHandler implements HttpHandler {
 		case "newPlayer":
 			addNewPlayer(t);
 			break;
-		case "leftDown":
-			// screen.getFighter(name).start(left);
+		case "move":
+			String nick;
+			String[] queries = t.getRequestURI().getQuery().split("&");
+			String[] temp = queries[0].split("=");
+			nick = temp[1];
+			temp= queries[1].split("=");
+			String ac = temp[1];
+			Fighter tempf;
+			switch(ac){
+			case "leftdown":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyDown(Keys.A);
+				}
+				break;
+			case "rightdown":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyDown(Keys.D);
+				}
+				break;
+			case "updown":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyDown(Keys.W);
+				}
+				break;
+			case "atackdown":
+				/*Fighter tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyDown(keycode)
+				}*/
+				break;
+			case "leftup":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyUp(Keys.A);
+				}
+				break;
+			case "rightup":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyUp(Keys.D);
+				}
+				break;
+			case "upup":
+				tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyUp(Keys.W);
+				}
+				break;
+			case "atackup":
+				/*Fighter tempf = screen.getFighter(nick);
+				if(tempf != null){
+					tempf.keyDown(keycode)
+				}*/
+				break;
+			}
 			break;
 		default:
 			break;
 		}
 
-	}
-
-	private void addNewPlayer(HttpExchange t) throws IOException {
-
-		String nick;
-		String[] queries = t.getRequestURI().getQuery().split("&");
-		String[] temp = queries[0].split("=");
-		nick = temp[1];
 		String response = "success";
+
 		t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 		t.sendResponseHeaders(200, response.length());
 		OutputStream os = t.getResponseBody();
 		os.write(response.getBytes());
-		
+
 		os.close();
+
+	}
+
+	private void addNewPlayer(HttpExchange t) throws IOException {
+		String nick;
+		String[] queries = t.getRequestURI().getQuery().split("&");
+		String[] temp = queries[0].split("=");
+		nick = temp[1];
+		//System.out.println("here : " + nick);
+		screen.addFighter(nick);
 
 	}
 
