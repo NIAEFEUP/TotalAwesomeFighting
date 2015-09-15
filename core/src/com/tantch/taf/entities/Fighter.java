@@ -1,11 +1,11 @@
 package com.tantch.taf.entities;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -14,7 +14,7 @@ import com.tantch.taf.TAFGame;
 
 public class Fighter implements InputProcessor {
 
-	private int JUMPPOWER = 400;
+	private int JUMPPOWER = 800;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -31,13 +31,15 @@ public class Fighter implements InputProcessor {
 	private Texture legsSprite;
 	private Texture torsoSprite;
 	private TAFGame game;
-	private Color taint;
+
+	private float r, g, b;
+
 	private int width = 64;
 	private int height = 64;
 	private int leftmargin = 16;
-	private int topmargin = 15;
-	private int realWidth=32;
-	private int realHeight=45;
+	private int topmargin = 8;
+	private int realWidth = 32;
+	private int realHeight = 52;
 	private int framesNumber;
 	private float time;
 
@@ -54,11 +56,20 @@ public class Fighter implements InputProcessor {
 	private boolean canJump, collided;
 
 	private TiledMapTileLayer collisionLayer;
-	private HashMap<String,Fighter> fighters;
+	private HashMap<String, Fighter> fighters;
 	private String name;
 
-	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String,Fighter> fighters) {
+	// ainda mais novo
+	private int leftPush;
+	private int rightPush;
+	private int resistancePush;
+
+	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters) {
 		this.collisionLayer = collisionLayer;
+		leftPush = 0;
+		rightPush = 0;
+		resistancePush = 10;
+
 		bodySpriteName = "BODY_male.png";
 		beltSpriteName = "BELT_leather.png";
 		feetSpriteName = "FEET_shoes_brown.png";
@@ -66,7 +77,10 @@ public class Fighter implements InputProcessor {
 		headSpriteName = "HEAD_leather_armor_hat.png";
 		legsSpriteName = "LEGS_pants_greenish.png";
 		torsoSpriteName = "TORSO_plate_armor_torso.png";
-		taint = Color.BLACK;
+		Random rd = new Random();
+		r = (rd.nextFloat() / 2f) + 0.5f;
+		g = (rd.nextFloat() / 2f) + 0.5f;
+		b = (rd.nextFloat() / 2f) + 0.5f;
 		this.game = game;
 		time = 0;
 		curFrame = 0;
@@ -78,6 +92,7 @@ public class Fighter implements InputProcessor {
 		this.name = name;
 		collided = false;
 		setTextures();
+		System.out.println("merda 3");
 	}
 
 	public String getName() {
@@ -119,7 +134,6 @@ public class Fighter implements InputProcessor {
 			velocity.x = 0;
 			break;
 		}
-
 		bodySprite = new Texture(Gdx.files.internal(folder + bodySpriteName));
 		beltSprite = new Texture(Gdx.files.internal(folder + beltSpriteName));
 		feetSprite = new Texture(Gdx.files.internal(folder + feetSpriteName));
@@ -132,6 +146,11 @@ public class Fighter implements InputProcessor {
 	public void start(String act) {
 
 		if (act.equals("jump")) {
+			
+			if(velocity.y >0){
+				return;
+			}
+			
 			standByAction = action;
 			action = act;
 			curFrame = 0;
@@ -149,7 +168,11 @@ public class Fighter implements InputProcessor {
 	}
 
 	public void stop(String act) {
-		if (!action.equals(act)) {
+		if(standByAction.equals(act)){
+			standByAction = "idle";
+		}
+
+			if (!action.equals(act)) {
 			if (act.equals(standByAction)) {
 				standByAction = "idle";
 			}
@@ -167,8 +190,8 @@ public class Fighter implements InputProcessor {
 
 		float oldX = x, oldY = y;
 		boolean collisionX = false, collisionY = false;
-
-		x = (int) (x + velocity.x * delta);
+		float temp = velocity.x * delta;
+		x = Math.round(x + temp);
 
 		if (velocity.x < 0)
 			collisionX = collidesLeft();
@@ -195,6 +218,19 @@ public class Fighter implements InputProcessor {
 			velocity.y = 0;
 		}
 
+		// new
+
+		if (action.equals("idle")) {
+			velocity.x = velocity.x * 0.9f;
+			if (velocity.x < speed / 10f) {
+				velocity.x = 0;
+			}
+		}
+		
+		if(y <-200){
+			game.dead.add(name);
+		}
+
 	}
 
 	private boolean isCellBlocked(float x, float y) {
@@ -213,46 +249,54 @@ public class Fighter implements InputProcessor {
 
 	public boolean collidesRight() {
 		for (float step = 0; step < realHeight; step += (collisionLayer.getTileHeight() / 2)) {
-			if (isCellBlocked(x + realWidth, y + step))
+			if (isCellBlocked(x + realWidth-5, y + step))
 				return true;
+		}
+		if (collided) {
+			collided = false;
+			return true;
 		}
 
 		fighters.forEach((k, v) -> {
-			if(!k.equals(name)){
-				if(((x+(realWidth / 2)) >= (v.getX() - (v.realWidth / 2))) && x <= v.getX() && y == v.getY()){
-					v.setVelocity(new Vector2(v.getVelocity().x + velocity.x,v.getVelocity().y));
-					//collided = true;
+
+			if (!k.equals(name)) {
+				if (((x + (realWidth / 2)-3) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) {
+					v.getPushed("right", 10);
+					collided = true;
+
 					return;
 				}
 			}
 		});
 
-		if(collided){
-			collided = false;
-			return true;
-		}
+		collided = false;
+
 		return false;
 	}
 
-
 	public boolean collidesLeft() {
 		for (float step = 0; step < realHeight; step += (collisionLayer.getTileHeight() / 2)) {
-			if (isCellBlocked(x, y + step))
+			if (isCellBlocked(x+5, y + step))
 				return true;
 		}
-
-		fighters.forEach((k, v) -> {
-			if(!k.equals(name))
-				if(((x-(realWidth / 2)) <= (v.getX() + (v.realWidth / 2))) && x >= v.getX() && y == v.getY()){
-					v.setVelocity(new Vector2(v.getVelocity().x + velocity.x,v.getVelocity().y));
-					//collided = true;
-					return;
-				}
-		});
-		if(collided){
+		if (collided) {
 			collided = false;
 			return true;
 		}
+
+		fighters.forEach((k, v) -> {
+
+			if (!k.equals(name))
+				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
+					v.getPushed("left", 10);
+
+					collided = true;
+
+					return;
+				}
+		});
+		
+		collided = false;
 		return false;
 	}
 
@@ -260,33 +304,36 @@ public class Fighter implements InputProcessor {
 		for (float step = 0; step < realWidth; step += (collisionLayer.getTileWidth() / 2)) {
 			if (isCellBlocked(x + step, y + realHeight))
 				return true;
-		}		
+		}
 		return false;
 	}
 
 	public boolean collidesBottom() {
 		for (float step = 0; step < realWidth; step += (collisionLayer.getTileWidth() / 2)) {
-			if (isCellBlocked(x + step, y ))
+			if (isCellBlocked(x + step, y))
 				return true;
-		}
-		
+		}//TODO poem a distancia mais pequena intersecao das 2 metades e mt grande
 		fighters.forEach((k, v) -> {
-			if(!k.equals(name))
-				if(((y-(realHeight / 2)) <= (v.getY() + (v.realHeight / 2)))
-				&& (x + (realWidth / 2) >= v.getX() - (v.realWidth / 2))
-				&& (x - (realWidth / 2) <= v.getX() + (v.realWidth / 2))){
-					System.out.println("mateite");
+			if (!k.equals(name)) {
+				if (((y - (realHeight / 2)) <= (v.getY() + (v.realHeight / 2)))
+						&& (y - (realHeight / 2)) > v.getY()
+						&& (x + (realWidth / 2) >= v.getX() - (v.realWidth / 2))
+						&& (x - (realWidth / 2) <= v.getX() + (v.realWidth / 2))) {
 					v.collided = true;
 					collided = true;
+					game.dead.add(k);
+					//System.out.println("player is in : " + x + ","  + y);
+					//System.out.println(name+  " colided with : " + k );
 					return;
 				}
-		});	
-		
-		if(collided){
+			}
+		});
+
+		if (collided) {
 			collided = false;
 			return true;
 		}
-			
+
 		return false;
 	}
 
@@ -323,28 +370,23 @@ public class Fighter implements InputProcessor {
 
 		int framx = (curFrame + frameSkip) * width;
 		int framy = dir * height;
+		game.batch.setColor(r, g, b, 1f);
+		game.batch.draw(bodySprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(beltSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(feetSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(handsSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(legsSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(headSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
+		game.batch.draw(torsoSprite, x, y, realWidth, realHeight, framx + leftmargin, framy + topmargin, realWidth,
+				realHeight, false, false);
 		game.batch.setColor(1f, 1f, 1f, 1f);
-		game.batch.draw(bodySprite, x, y, realWidth,realHeight, framx + leftmargin, framy + topmargin, realWidth,realHeight, false, false);
-		/*
-		 * game.batch.draw(beltSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 * game.batch.draw(feetSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 * game.batch.draw(handsSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 * game.batch.draw(legsSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 * game.batch.draw(headSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 * game.batch.draw(torsoSprite, x, y, width - rightmargin - leftmargin,
-		 * height - downmargin - topmargin, framx + leftmargin, framy +
-		 * topmargin, width - rightmargin, height - downmargin, false, false);
-		 */
+
 	}
 
 	public TiledMapTileLayer getCollisionLayer() {
@@ -378,6 +420,18 @@ public class Fighter implements InputProcessor {
 			break;
 		}
 		return true;
+	}
+
+	public void getPushed(String dir, int force) {
+		switch (dir) {
+		case "right":
+			setVelocity(new Vector2(speed, getVelocity().y));
+			break;
+		case "left":
+			setVelocity(new Vector2(-speed, getVelocity().y));
+			break;
+
+		}
 	}
 
 	@Override
