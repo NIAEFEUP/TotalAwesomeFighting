@@ -12,6 +12,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
+import com.tantch.taf.screens.GameScreen;
 
 public class Fighter implements InputProcessor {
 
@@ -65,10 +66,15 @@ public class Fighter implements InputProcessor {
 	private int rightPush;
 	private int resistancePush;
 	private float attackTime;
-	private ConcurrentLinkedDeque<Projectile> projectiles;
+	private boolean oneHitPunch = false;
+	ConcurrentLinkedDeque<Projectile> projectiles;
+	private int projectilePower = 400;
 
-	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters) {
+	String direction;
+
+	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters, ConcurrentLinkedDeque<Projectile> projectiles) {
 		this.collisionLayer = collisionLayer;
+		this.projectiles = projectiles;
 		leftPush = 0;
 		rightPush = 0;
 		resistancePush = 10;
@@ -94,8 +100,7 @@ public class Fighter implements InputProcessor {
 		this.fighters = fighters;
 		this.name = name;
 		collided = false;
-		
-		 projectiles = new ConcurrentLinkedDeque<Projectile>();
+
 		setTextures();
 	}
 
@@ -111,6 +116,7 @@ public class Fighter implements InputProcessor {
 		String folder;
 		switch (action) {
 		case "left":
+			direction = action;
 			folder = "walkcycle/";
 			dir = 1;
 			framesNumber = 9;
@@ -118,6 +124,7 @@ public class Fighter implements InputProcessor {
 			velocity.x = -speed;
 			break;
 		case "right":
+			direction = action;
 			folder = "walkcycle/";
 			dir = 3;
 			framesNumber = 9;
@@ -154,27 +161,47 @@ public class Fighter implements InputProcessor {
 	}
 
 	private void doAttack() {
-		fighters.forEach((k, v) -> {
+		Projectile projectile= new Projectile(this, name, direction, projectiles);
+		projectiles.add(projectile);
 
-			if (!k.equals(name)) {
-				if ((((x + (realWidth / 2)+10) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) 
-						|| (((x - (realWidth / 2)-10) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY())) {
-					game.dead.add(k);
-					return;
+		if(oneHitPunch){
+			fighters.forEach((k, v) -> {
+				if (!k.equals(name)) {
+					if ((((x + (realWidth / 2)+10) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) 
+							|| (((x - (realWidth / 2)-10) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY())) {
+						game.dead.add(k);
+						return;
+					}
 				}
-			}
-		});
-		
+			});
+		}
+
+	}
+
+	public int getRealWidth() {
+		return realWidth;
+	}
+
+	public void setRealWidth(int realWidth) {
+		this.realWidth = realWidth;
+	}
+
+	public int getRealHeight() {
+		return realHeight;
+	}
+
+	public void setRealHeight(int realHeight) {
+		this.realHeight = realHeight;
 	}
 
 	public void start(String act) {
 
 		if (act.equals("jump")) {
-			
+
 			if(velocity.y >0){
 				return;
 			}
-			
+
 			standByAction = action;
 			action = act;
 			curFrame = 0;
@@ -189,7 +216,7 @@ public class Fighter implements InputProcessor {
 			setTextures();
 			return;
 		}
-		
+
 		if (!action.equals("idle")) {
 			standByAction = act;
 			return;
@@ -204,7 +231,7 @@ public class Fighter implements InputProcessor {
 			standByAction = "idle";
 		}
 
-			if (!action.equals(act)) {
+		if (!action.equals(act)) {
 			if (act.equals(standByAction)) {
 				standByAction = "idle";
 			}
@@ -218,11 +245,7 @@ public class Fighter implements InputProcessor {
 	}
 
 	public void update(float delta) {
-		
-		for (Projectile projectile : projectiles) {			
-			projectile.update(delta);
-		}
-		
+
 		velocity.y -= gravity * delta;
 
 		float oldX = x, oldY = y;
@@ -234,6 +257,12 @@ public class Fighter implements InputProcessor {
 			collisionX = collidesLeft();
 		else if (velocity.x > 0)
 			collisionX = collidesRight();
+
+		if(!collisionX){
+			collidesWithEntityRight();
+			if(!collisionX)
+				collidesWithEntityLeft();
+		}
 
 		if (collisionX) {
 			x = (int) oldX;
@@ -259,11 +288,11 @@ public class Fighter implements InputProcessor {
 
 		if (action.equals("idle")) {
 			velocity.x = velocity.x * 0.9f;
-			if (velocity.x < speed / 10f) {
+			if (Math.abs(velocity.x) < speed / 10f) {
 				velocity.x = 0;
 			}
 		}
-		
+
 		if(y <-200){
 			game.dead.add(name);
 		}
@@ -289,18 +318,49 @@ public class Fighter implements InputProcessor {
 			if (isCellBlocked(x + realWidth-5, y + step))
 				return true;
 		}
+		return false;
+	}
+
+	public boolean collidesWithEntityRight(){
+		projectiles.forEach((k) -> {
+			if(!k.getId().equals(name) && k.getDir().equals("left"))
+				if(((x + (realWidth / 2)-3) >= (k.getX() - (k.getWidth() / 2) + 3)) && x <= k.getX() && (k.getY() <= (y + (realHeight / 2)) && k.getY() >= y - (realHeight / 2))){
+					getPushed(2,-projectilePower);
+					k.setCollision(true);
+					return;
+				}
+		});
 
 		fighters.forEach((k, v) -> {
-
 			if (!k.equals(name)) {
 				if (((x + (realWidth / 2)-3) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) {
-					v.getPushed("left", 10 ,velocity.x);
-					collided = true;
-
+					v.getPushed(1 ,velocity.x);
 					return;
 				}
 			}
 		});
+		return false;
+	}
+
+	public boolean collidesWithEntityLeft(){
+		projectiles.forEach((k) -> {
+			if(!k.getId().equals(name)&& k.getDir().equals("right"))
+				if(((x - (realWidth / 2)+3) <= k.getX() - 3) && x >= k.getX() && (k.getY() <= (y + (realHeight / 2)) && k.getY() >= y - (realHeight / 2))){
+					getPushed(2,projectilePower);
+					k.setCollision(true);
+					return;
+				}
+		});
+		fighters.forEach((k, v) -> {
+
+			if (!k.equals(name))
+				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
+					v.getPushed( 1, velocity.x);
+					collided = true;
+					return;
+				}
+		});
+
 		return false;
 	}
 
@@ -309,17 +369,6 @@ public class Fighter implements InputProcessor {
 			if (isCellBlocked(x+5, y + step))
 				return true;
 		}
-
-		fighters.forEach((k, v) -> {
-
-			if (!k.equals(name))
-				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
-					v.getPushed("right", 10, velocity.x);
-					collided = true;
-					return;
-				}
-		});
-		
 		return false;
 	}
 
@@ -377,9 +426,7 @@ public class Fighter implements InputProcessor {
 	public void draw(float delta) {
 
 		update(delta);
-		for (Projectile projectile : projectiles) {
-			projectile.draw(delta);
-		}
+
 		time += delta;
 
 		if (time > 1.0f / 30.0f) {
@@ -448,16 +495,9 @@ public class Fighter implements InputProcessor {
 		return true;
 	}
 
-	public void getPushed(String dir, int force, float vX) {
-		switch (dir) {
-		case "right":
-			setVelocity(new Vector2(velocity.x + vX, getVelocity().y));
-			break;
-		case "left":
-			setVelocity(new Vector2(vX + velocity.x, getVelocity().y));
-			break;
+	public void getPushed(int force, float vX) {
+		setVelocity(new Vector2(vX * force, velocity.y));
 
-		}
 	}
 
 	@Override

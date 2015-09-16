@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.tantch.taf.TAFGame;
 import com.tantch.taf.entities.Fighter;
+import com.tantch.taf.entities.Projectile;
 import com.tantch.taf.server.GameServer;
 import com.tantch.taf.server.GameServerHandler;
 
@@ -25,6 +27,7 @@ public class GameScreen implements Screen {
 
 	OrthographicCamera camera;
 	private static HashMap<String, Fighter> fighters;
+	public ConcurrentLinkedDeque<Projectile> projectiles;
 	private GameServer server;
 	private ArrayList<String> newfighters;
 
@@ -33,6 +36,8 @@ public class GameScreen implements Screen {
 		newfighters = new ArrayList<String>();
 		GameServer.init();
 		game = gam;
+		projectiles = new ConcurrentLinkedDeque<Projectile>();
+
 	}
 
 	@Override
@@ -48,13 +53,13 @@ public class GameScreen implements Screen {
 						* ((TiledMapTileLayer) map.getLayers().get(0)).getTileHeight()) / 2,
 				0);
 		fighters = new HashMap<String, Fighter>();
-		Fighter fighter = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "1", fighters);
+		Fighter fighter = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "1", fighters, projectiles);
 		fighter.setPosition((int) (5 * fighter.getCollisionLayer().getTileWidth()),
 				(fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters.put("1", fighter);
 		Gdx.input.setInputProcessor(fighter);
 
-		Fighter fighter1 = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "2", fighters);
+		Fighter fighter1 = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), "2", fighters, projectiles);
 		fighter1.setPosition((int) (7 * fighter.getCollisionLayer().getTileWidth()),
 				(fighter.getCollisionLayer().getHeight() - 19) * fighter.getCollisionLayer().getHeight());
 		fighters.put("2", fighter1);
@@ -78,7 +83,9 @@ public class GameScreen implements Screen {
 
 		game.batch.begin();
 		{
-
+			for (Projectile projectile : projectiles) {
+				projectile.draw(delta);
+			}
 			fighters.forEach((k, v) -> v.draw(delta));
 			for (String string : game.dead) {
 				fighters.remove(string);
@@ -87,15 +94,15 @@ public class GameScreen implements Screen {
 			game.dead = new ArrayList<String>();
 			ArrayList<String> newTemp = (ArrayList<String>) newfighters.clone();
 			newfighters = new ArrayList<String>();
-			
+
 			for (String string : newTemp) {
-				Fighter temp = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), string, fighters);
+				Fighter temp = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), string, fighters, projectiles);
 				Random rd= new Random();
-				
+
 				temp.setPosition(rd.nextInt(200)+200, 200);
 				fighters.put(string, temp);
 				System.out.println("LOG fighters sze : " + fighters.size());
-				
+
 			}
 			//
 		}
@@ -146,8 +153,8 @@ public class GameScreen implements Screen {
 
 	public void addFighter(String nick) {
 		newfighters.add(nick);
-		
-		
+
+
 	}
 
 }
