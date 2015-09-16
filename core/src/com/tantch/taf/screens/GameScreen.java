@@ -3,6 +3,7 @@ package com.tantch.taf.screens;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -12,7 +13,6 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
 import com.tantch.taf.entities.Fighter;
 import com.tantch.taf.server.GameServer;
@@ -85,14 +85,18 @@ public class GameScreen implements Screen {
 				System.out.println("killed : " + string);
 			}
 			game.dead = new ArrayList<String>();
-			for (String string : newfighters) {
+			ArrayList<String> newTemp = (ArrayList<String>) newfighters.clone();
+			newfighters = new ArrayList<String>();
+			
+			for (String string : newTemp) {
 				Fighter temp = new Fighter(game, (TiledMapTileLayer) map.getLayers().get(0), string, fighters);
-				temp.setPosition(400, 200);
+				Random rd= new Random();
+				
+				temp.setPosition(rd.nextInt(200)+200, 200);
 				fighters.put(string, temp);
 				System.out.println("LOG fighters sze : " + fighters.size());
 				
 			}
-			newfighters = new ArrayList<String>();
 			//
 		}
 		game.batch.end();

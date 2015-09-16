@@ -36,10 +36,10 @@ public class Fighter implements InputProcessor {
 
 	private int width = 64;
 	private int height = 64;
-	private int leftmargin = 16;
-	private int topmargin = 8;
-	private int realWidth = 32;
-	private int realHeight = 52;
+	private int leftmargin = 15;
+	private int topmargin = 10;
+	private int realWidth = 31;
+	private int realHeight = 50;
 	private int framesNumber;
 	private float time;
 
