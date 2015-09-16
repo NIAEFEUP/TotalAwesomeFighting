@@ -2,6 +2,7 @@ package com.tantch.taf.entities;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -30,7 +31,7 @@ public class Fighter implements InputProcessor {
 	private Texture headSprite;
 	private Texture legsSprite;
 	private Texture torsoSprite;
-	private TAFGame game;
+	TAFGame game;
 
 	private float r, g, b;
 
@@ -64,6 +65,7 @@ public class Fighter implements InputProcessor {
 	private int rightPush;
 	private int resistancePush;
 	private float attackTime;
+	private ConcurrentLinkedDeque<Projectile> projectiles;
 
 	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters) {
 		this.collisionLayer = collisionLayer;
@@ -92,6 +94,8 @@ public class Fighter implements InputProcessor {
 		this.fighters = fighters;
 		this.name = name;
 		collided = false;
+		
+		 projectiles = new ConcurrentLinkedDeque<Projectile>();
 		setTextures();
 	}
 
@@ -214,6 +218,11 @@ public class Fighter implements InputProcessor {
 	}
 
 	public void update(float delta) {
+		
+		for (Projectile projectile : projectiles) {			
+			projectile.update(delta);
+		}
+		
 		velocity.y -= gravity * delta;
 
 		float oldX = x, oldY = y;
@@ -368,7 +377,9 @@ public class Fighter implements InputProcessor {
 	public void draw(float delta) {
 
 		update(delta);
-		
+		for (Projectile projectile : projectiles) {
+			projectile.draw(delta);
+		}
 		time += delta;
 
 		if (time > 1.0f / 30.0f) {
