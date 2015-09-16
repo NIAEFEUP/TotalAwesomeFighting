@@ -14,7 +14,7 @@ import com.tantch.taf.TAFGame;
 
 public class Fighter implements InputProcessor {
 
-	private int JUMPPOWER = 800;
+	private int JUMPPOWER = 600;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;
@@ -63,6 +63,7 @@ public class Fighter implements InputProcessor {
 	private int leftPush;
 	private int rightPush;
 	private int resistancePush;
+	private float attackTime;
 
 	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters) {
 		this.collisionLayer = collisionLayer;
@@ -92,7 +93,6 @@ public class Fighter implements InputProcessor {
 		this.name = name;
 		collided = false;
 		setTextures();
-		System.out.println("merda 3");
 	}
 
 	public String getName() {
@@ -126,6 +126,12 @@ public class Fighter implements InputProcessor {
 			frameSkip = 2;
 			velocity.y = JUMPPOWER;
 			break;
+		case "attack":
+			folder = "bow/";
+			framesNumber = 1;
+			frameSkip = 2;
+			doAttack();
+			break;
 		case "idle":
 		default:
 			folder = "walkcycle/";
@@ -143,6 +149,20 @@ public class Fighter implements InputProcessor {
 		torsoSprite = new Texture(Gdx.files.internal(folder + torsoSpriteName));
 	}
 
+	private void doAttack() {
+		fighters.forEach((k, v) -> {
+
+			if (!k.equals(name)) {
+				if ((((x + (realWidth / 2)+10) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) 
+						|| (((x - (realWidth / 2)-10) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY())) {
+					game.dead.add(k);
+					return;
+				}
+			}
+		});
+		
+	}
+
 	public void start(String act) {
 
 		if (act.equals("jump")) {
@@ -158,6 +178,14 @@ public class Fighter implements InputProcessor {
 			return;
 		}
 
+		if(act.equals("attack")){
+			standByAction = action;
+			action = act;
+			curFrame = 0;
+			setTextures();
+			return;
+		}
+		
 		if (!action.equals("idle")) {
 			standByAction = act;
 			return;
@@ -252,25 +280,18 @@ public class Fighter implements InputProcessor {
 			if (isCellBlocked(x + realWidth-5, y + step))
 				return true;
 		}
-		if (collided) {
-			collided = false;
-			return true;
-		}
 
 		fighters.forEach((k, v) -> {
 
 			if (!k.equals(name)) {
 				if (((x + (realWidth / 2)-3) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) {
-					v.getPushed("right", 10);
+					v.getPushed("left", 10 ,velocity.x);
 					collided = true;
 
 					return;
 				}
 			}
 		});
-
-		collided = false;
-
 		return false;
 	}
 
@@ -279,24 +300,17 @@ public class Fighter implements InputProcessor {
 			if (isCellBlocked(x+5, y + step))
 				return true;
 		}
-		if (collided) {
-			collided = false;
-			return true;
-		}
 
 		fighters.forEach((k, v) -> {
 
 			if (!k.equals(name))
 				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
-					v.getPushed("left", 10);
-
+					v.getPushed("right", 10, velocity.x);
 					collided = true;
-
 					return;
 				}
 		});
 		
-		collided = false;
 		return false;
 	}
 
@@ -322,8 +336,6 @@ public class Fighter implements InputProcessor {
 					v.collided = true;
 					collided = true;
 					game.dead.add(k);
-					//System.out.println("player is in : " + x + ","  + y);
-					//System.out.println(name+  " colided with : " + k );
 					return;
 				}
 			}
@@ -355,6 +367,8 @@ public class Fighter implements InputProcessor {
 
 	public void draw(float delta) {
 
+		update(delta);
+		
 		time += delta;
 
 		if (time > 1.0f / 30.0f) {
@@ -365,8 +379,6 @@ public class Fighter implements InputProcessor {
 			time = 0;
 
 		}
-
-		update(delta);
 
 		int framx = (curFrame + frameSkip) * width;
 		int framy = dir * height;
@@ -418,17 +430,20 @@ public class Fighter implements InputProcessor {
 		case Keys.D:
 			start("right");
 			break;
+		case Keys.SPACE:
+			start("attack");
+			break;
 		}
 		return true;
 	}
 
-	public void getPushed(String dir, int force) {
+	public void getPushed(String dir, int force, float vX) {
 		switch (dir) {
 		case "right":
-			setVelocity(new Vector2(speed, getVelocity().y));
+			setVelocity(new Vector2(velocity.x + vX, getVelocity().y));
 			break;
 		case "left":
-			setVelocity(new Vector2(-speed, getVelocity().y));
+			setVelocity(new Vector2(vX + velocity.x, getVelocity().y));
 			break;
 
 		}
@@ -445,6 +460,9 @@ public class Fighter implements InputProcessor {
 			break;
 		case Keys.D:
 			stop("right");
+			break;
+		case Keys.SPACE:
+			stop("attack");
 			break;
 		}
 		return true;
