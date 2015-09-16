@@ -14,7 +14,7 @@ import com.tantch.taf.TAFGame;
 
 public class Fighter implements InputProcessor {
 
-	private int JUMPPOWER = 600;
+	private int JUMPPOWER = 700;
 	// TODO falta por as outras partes do torso
 	private String bodySpriteName;
 	private String beltSpriteName;

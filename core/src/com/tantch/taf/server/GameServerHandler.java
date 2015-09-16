@@ -57,10 +57,10 @@ public class GameServerHandler implements HttpHandler {
 				}
 				break;
 			case "atackdown":
-				/*Fighter tempf = screen.getFighter(nick);
+				tempf = screen.getFighter(nick);
 				if(tempf != null){
-					tempf.keyDown(keycode)
-				}*/
+					tempf.keyDown(Keys.SPACE);
+				}
 				break;
 			case "leftup":
 				tempf = screen.getFighter(nick);
@@ -81,10 +81,10 @@ public class GameServerHandler implements HttpHandler {
 				}
 				break;
 			case "atackup":
-				/*Fighter tempf = screen.getFighter(nick);
+				tempf = screen.getFighter(nick);
 				if(tempf != null){
-					tempf.keyDown(keycode)
-				}*/
+					tempf.keyUp(Keys.SPACE);
+				}
 				break;
 			}
 			break;
