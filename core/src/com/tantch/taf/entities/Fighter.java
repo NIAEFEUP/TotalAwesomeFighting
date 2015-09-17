@@ -161,9 +161,11 @@ public class Fighter implements InputProcessor {
 	}
 
 	private void doAttack() {
-		Projectile projectile= new Projectile(this, name, direction, projectiles);
+		System.out.println(name + " attacked");
+		System.out.println(projectiles.size());
+		Projectile projectile= new Projectile(game,x,(getY() + (getRealHeight() / 2)), name, direction, projectiles);
+		System.out.println(projectiles.size());
 		projectiles.add(projectile);
-
 		if(oneHitPunch){
 			fighters.forEach((k, v) -> {
 				if (!k.equals(name)) {
