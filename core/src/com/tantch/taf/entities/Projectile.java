@@ -5,16 +5,16 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import com.tantch.taf.TAFGame;
 
 public class Projectile {
-
+	private TAFGame game;
 	private float speed = 600;
 	private String dir = "none";
 	private int x, y;
 	private boolean collision;
 	private float height,width;
-	private Fighter fighter;
-	private Texture bodySprite;
+	private static Texture bodySprite =new Texture(Gdx.files.internal("img/hadouken.png"));;
 	private String id;
 	private Vector2 velocity;
 	private int gravity = 0;
@@ -31,15 +31,15 @@ public class Projectile {
 	}
 
 
-	public Projectile (Fighter fighter, String id, String direction, ConcurrentLinkedDeque<Projectile> projectiles){
-		this.fighter = fighter;
+	public Projectile (TAFGame game,int x,int y, String id, String direction, ConcurrentLinkedDeque<Projectile> projectiles){
 		this.projectiles = projectiles;
+		this.game=game;
 		this.id = id;
 		height=14;
 		width=30;
-		this.x = fighter.getX();
-		this.y = (fighter.getY() + (fighter.getRealHeight() / 2));
-		bodySprite = new Texture(Gdx.files.internal("img/hadouken.png"));
+		this.x = x;
+		this.y = y;
+		System.out.println("here");
 		this.dir = direction;
 		velocity = new Vector2();
 		velocity.x = speed;
@@ -49,10 +49,10 @@ public class Projectile {
 	public void draw(float delta) {
 		update(delta);
 		if(dir.equals("right"))
-			fighter.game.batch.draw(bodySprite, x, y, width, height, 481, 131, 412,
+			game.batch.draw(bodySprite, x, y, width, height, 481, 131, 412,
 					195, false, false);
 		else
-			fighter.game.batch.draw(bodySprite, x, y, width, height, 481, 131, 412,
+			game.batch.draw(bodySprite, x, y, width, height, 481, 131, 412,
 					195, true, false);
 		
 		

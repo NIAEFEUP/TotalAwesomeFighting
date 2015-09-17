@@ -163,8 +163,8 @@ public class Fighter implements InputProcessor {
 
 	private void doAttack() {
 		if(!direction.equals("none")){
-		Projectile projectile= new Projectile(this, name, direction, projectiles);
-		projectiles.add(projectile);
+			Projectile projectile= new Projectile(game,x,(getY() + (getRealHeight() / 2)), name, direction, projectiles);
+			projectiles.add(projectile);
 		}
 
 		if(oneHitPunch){
