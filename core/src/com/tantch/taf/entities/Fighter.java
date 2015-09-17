@@ -70,7 +70,7 @@ public class Fighter implements InputProcessor {
 	ConcurrentLinkedDeque<Projectile> projectiles;
 	private int projectilePower = 400;
 
-	String direction;
+	private String direction;
 
 	public Fighter(TAFGame game, TiledMapTileLayer collisionLayer, String name, HashMap<String, Fighter> fighters, ConcurrentLinkedDeque<Projectile> projectiles) {
 		this.collisionLayer = collisionLayer;
@@ -100,6 +100,7 @@ public class Fighter implements InputProcessor {
 		this.fighters = fighters;
 		this.name = name;
 		collided = false;
+		direction = "none";
 
 		setTextures();
 	}
@@ -161,8 +162,10 @@ public class Fighter implements InputProcessor {
 	}
 
 	private void doAttack() {
+		if(!direction.equals("none")){
 		Projectile projectile= new Projectile(this, name, direction, projectiles);
 		projectiles.add(projectile);
+		}
 
 		if(oneHitPunch){
 			fighters.forEach((k, v) -> {
