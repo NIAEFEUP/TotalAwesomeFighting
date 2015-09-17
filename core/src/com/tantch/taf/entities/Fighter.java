@@ -12,7 +12,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
 import com.tantch.taf.TAFGame;
-import com.tantch.taf.screens.GameScreen;
 
 public class Fighter implements InputProcessor {
 
@@ -69,6 +68,8 @@ public class Fighter implements InputProcessor {
 	private boolean oneHitPunch = false;
 	ConcurrentLinkedDeque<Projectile> projectiles;
 	private int projectilePower = 400;
+	private int deaths;
+	private boolean dead;
 
 	private String direction;
 
@@ -101,8 +102,18 @@ public class Fighter implements InputProcessor {
 		this.name = name;
 		collided = false;
 		direction = "none";
+		deaths = 0;
+		dead = false;
 
 		setTextures();
+	}
+
+	public boolean isDead() {
+		return dead;
+	}
+
+	public void setDead(boolean dead) {
+		this.dead = dead;
 	}
 
 	public String getName() {
@@ -161,9 +172,21 @@ public class Fighter implements InputProcessor {
 		torsoSprite = new Texture(Gdx.files.internal(folder + torsoSpriteName));
 	}
 
+	public int getDeaths() {
+		return deaths;
+	}
+
+	public void setDeaths(int deaths) {
+		this.deaths = deaths;
+	}
+
 	private void doAttack() {
 		if(!direction.equals("none")){
-			Projectile projectile= new Projectile(game,x,(getY() + (getRealHeight() / 2)), name, direction, projectiles);
+			System.out.println(x);			
+			System.out.println(y);
+			System.out.println(x);
+
+			Projectile projectile= new Projectile(game,x,y + (realHeight / 2), name, direction, projectiles);
 			projectiles.add(projectile);
 		}
 
@@ -172,7 +195,8 @@ public class Fighter implements InputProcessor {
 				if (!k.equals(name)) {
 					if ((((x + (realWidth / 2)+10) >= (v.getX() - (v.realWidth / 2)+3)) && x <= v.getX() && y == v.getY()) 
 							|| (((x - (realWidth / 2)-10) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY())) {
-						game.dead.add(k);
+						dead = true;
+						deaths++;
 						return;
 					}
 				}
@@ -297,7 +321,8 @@ public class Fighter implements InputProcessor {
 		}
 
 		if(y <-200){
-			game.dead.add(name);
+			dead = true;
+			deaths++;
 		}
 
 	}
@@ -356,7 +381,7 @@ public class Fighter implements InputProcessor {
 		});
 		fighters.forEach((k, v) -> {
 
-			if (!k.equals(name))
+			if (!k.equals(name) && !v.isDead())
 				if (((x - (realWidth / 2)+3) <= (v.getX() + (v.realWidth / 2)-3)) && x >= v.getX() && y == v.getY()) {
 					v.getPushed( 1, velocity.x);
 					collided = true;
@@ -389,14 +414,15 @@ public class Fighter implements InputProcessor {
 				return true;
 		}//TODO poem a distancia mais pequena intersecao das 2 metades e mt grande
 		fighters.forEach((k, v) -> {
-			if (!k.equals(name)) {
+			if (!k.equals(name) && !v.isDead()) {
 				if (((y - (realHeight / 2)) <= (v.getY() + (v.realHeight / 2)))
 						&& (y - (realHeight / 2)) > v.getY()
 						&& (x + (realWidth / 2) >= v.getX() - (v.realWidth / 2))
 						&& (x - (realWidth / 2) <= v.getX() + (v.realWidth / 2))) {
 					v.collided = true;
 					collided = true;
-					game.dead.add(k);
+					v.setDead(true);
+					deaths++;
 					return;
 				}
 			}

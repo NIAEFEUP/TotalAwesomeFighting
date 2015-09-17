@@ -14,12 +14,15 @@ public class Projectile {
 	private int x, y;
 	private boolean collision;
 	private float height,width;
-	private static Texture bodySprite =new Texture(Gdx.files.internal("img/hadouken.png"));;
+	private static Texture bodySprite;
 	private String id;
 	private Vector2 velocity;
 	private int gravity = 0;
 	private  ConcurrentLinkedDeque<Projectile> projectiles;
 
+	public static void load(){
+		bodySprite =new Texture(Gdx.files.internal("img/hadouken.png"));
+	}
 
 	public boolean isCollision() {
 		return collision;
@@ -39,7 +42,6 @@ public class Projectile {
 		width=30;
 		this.x = x;
 		this.y = y;
-		System.out.println("here");
 		this.dir = direction;
 		velocity = new Vector2();
 		velocity.x = speed;
@@ -54,8 +56,8 @@ public class Projectile {
 		else
 			game.batch.draw(bodySprite, x, y, width, height, 481, 131, 412,
 					195, true, false);
-		
-		
+
+
 	}
 
 	public int getX() {
@@ -96,22 +98,47 @@ public class Projectile {
 			temp = -velocity.x * delta;
 		else
 			temp =  velocity.x * delta;
-		
+
 		x = Math.round(x + temp);
-		
+
 		if(x > 800 || x < 0 || collision)
 			projectiles.remove(this);
-		
+
 		y = (int) (y + velocity.y * delta);
-		
-		if (velocity.x < 0)
+
+		if (velocity.x < 0){
 			collision = collidesLeft();
-		else if (velocity.x > 0)
+			collidesWithEntityLeft();
+		}
+		else if (velocity.x > 0){
 			collision = collidesRight();
-		
-		
+			collidesWithEntityRight();
+		}
+
+
 	}
 
+	public void collidesWithEntityRight(){
+		projectiles.forEach((k) -> {
+			if(!k.getId().equals(id) && k.getDir().equals("left") && dir.equals("right"))
+				if(((x + (width / 2)-3) >= (k.getX() - (k.getWidth() / 2) + 3)) && x <= k.getX() && (k.getY() <= (y + (height / 2)) && k.getY() >= y - (height / 2))){
+					k.setCollision(true);
+					collision = true;
+					return;
+				}
+		});
+	}
+
+	public void collidesWithEntityLeft(){
+		projectiles.forEach((k) -> {
+			if(!k.getId().equals(id) && k.getDir().equals("right") && dir.equals("left"))
+				if(((x - (width / 2)+3) <= (k.getX() + (k.getWidth() / 2)) - 3) && x >= k.getX() && (k.getY() <= (y + (height / 2)) && k.getY() >= y - (height / 2))){
+					k.setCollision(true);
+					collision = true;
+					return;
+				}
+		});
+	}
 
 	public Vector2 getVelocity() {
 		return velocity;

@@ -30,6 +30,8 @@ public class GameScreen implements Screen {
 	public ConcurrentLinkedDeque<Projectile> projectiles;
 	private GameServer server;
 	private ArrayList<String> newfighters;
+	
+	private int step;
 
 	public GameScreen(final TAFGame gam) throws IOException {
 		server = new GameServer(7777, "/fighter", new GameServerHandler(this));
@@ -74,10 +76,6 @@ public class GameScreen implements Screen {
 
 		renderer.setView(camera);
 		renderer.render();
-		//
-		// renderer.getBatch().begin();
-		// dummy.draw(renderer.getBatch());
-		// renderer.getBatch().end();
 
 		game.batch.setProjectionMatrix(camera.combined);
 
@@ -86,12 +84,13 @@ public class GameScreen implements Screen {
 			for (Projectile projectile : projectiles) {
 				projectile.draw(delta);
 			}
-			fighters.forEach((k, v) -> v.draw(delta));
-			for (String string : game.dead) {
-				fighters.remove(string);
-				System.out.println("killed : " + string);
-			}
-			game.dead = new ArrayList<String>();
+			fighters.forEach((k, v) -> {
+				if(!v.isDead()){
+					v.draw(delta);
+					
+					game.font.draw(game.batch, k + " deaths: " + v.getDeaths(), v.getX(), v.getY() + v.getRealHeight() + 25);
+				}
+			});
 			ArrayList<String> newTemp = (ArrayList<String>) newfighters.clone();
 			newfighters = new ArrayList<String>();
 
@@ -101,10 +100,8 @@ public class GameScreen implements Screen {
 
 				temp.setPosition(rd.nextInt(200)+200, 200);
 				fighters.put(string, temp);
-				System.out.println("LOG fighters sze : " + fighters.size());
-
 			}
-			//
+
 		}
 		game.batch.end();
 	}
@@ -152,7 +149,14 @@ public class GameScreen implements Screen {
 	}
 
 	public void addFighter(String nick) {
-		newfighters.add(nick);
+		if(fighters.get(nick) == null){
+			newfighters.add(nick);			
+		}
+		else{
+			fighters.get(nick).setDead(false);
+			Random rd = new Random();
+			fighters.get(nick).setPosition(rd.nextInt(600)+250, 400);
+		}
 
 
 	}
